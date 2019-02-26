@@ -1,0 +1,72 @@
+ServerHost = localhost
+ServerPort = 9000
+Community  = alpha
+
+
+//------------------------------------------------
+// Antler 
+
+ProcessConfig = ANTLER
+{
+  MSBetweenLaunches = 200
+  
+  Run = MOOSDB        @ NewConsole = false
+  Run = uXMS          @ NewConsole = true
+  Run = pPrimeFactor  @ NewConsole = false
+  Run = uTimerScript  @ NewConsole = false
+  Run = pLogger       @ NewConsoel = false
+}
+
+
+//------------------------------------------------
+// uXMS
+
+ProcessConfig = uXMS
+{
+  AppTick   = 4
+  CommsTick = 4
+
+  VAR            = NUM_VALUE, PRIME_RESULT, DB_CLIENTS, DB_UPTIME
+  DISPLAY_SOURCE = true
+  DISPLAY_TIME   = true
+}
+
+
+//------------------------------------------------
+// pPrimeFactor
+
+ProcessConfig = pPrimeFactor
+{
+   AppTick   = 4
+   CommsTick = 4
+}
+
+
+//------------------------------------------------
+// uTimerScript 
+
+ProcessConfig = uTimerScript
+{
+  AppTick = 4
+  CommsTick = 4
+  paused = false
+
+  event  = var=NUM_VALUE, val="100003", time=0.25
+
+  reset_max  = 0
+  reset_time = all-posted
+}
+
+
+//------------------------------------------------
+// pLogger
+
+ProcessConfig = pLogger
+{
+  AsyncLog = true
+  WildCardLogging = true
+  WildCardOmitPatter = *_STATUS
+
+  LOG = PRIME_RESULT @ 0
+  LOG = NUM_VALUE @ 0
+}
