@@ -14,7 +14,7 @@ ProcessConfig = ANTLER
   Run = uXMS          @ NewConsole = true
   Run = pPrimeFactor  @ NewConsole = false
   Run = uTimerScript  @ NewConsole = false
-  Run = pLogger       @ NewConsoel = false
+  Run = pLogger       @ NewConsole = false
 }
 
 

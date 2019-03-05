@@ -1,3 +1,4 @@
 missions/*/MOOSLog*
 missions/*/.*
 src/*/.*
+src/*/MOOSLog*

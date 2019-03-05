@@ -1,0 +1,67 @@
+ServerHost = localhost
+ServerPort = 9000
+Community  = alpha
+
+
+//------------------------------------------------
+// Antler 
+
+ProcessConfig = ANTLER
+{
+  MSBetweenLaunches = 200
+  
+  Run = MOOSDB                       @ NewConsole = false
+  Run = pCommunicationAngle_zduguid  @ NewConsole = false
+  Run = uXMS                         @ NewConsole = true
+  Run = uTimerScript                 @ NewConsole = false
+}
+
+
+//------------------------------------------------
+// pCommunicationAngle_zduguid config block
+
+ProcessConfig = pCommunicationAngle_zduguid
+{
+   AppTick   = 4
+   CommsTick = 4
+}
+
+
+//------------------------------------------------
+// uXMS
+
+ProcessConfig = uXMS
+{
+  AppTick   = 4
+  CommsTick = 4
+
+  VAR            = VEHICLE_NAME, COLLABORATOR_NAME
+  VAR            = ACOUSTIC_PATH, ACOUSTIC_PATH_REF 
+  VAR            = CONNECTIVITY_LOCATION, CONNECTIVITY_LOCATION_REF
+  VAR            = DB_CLIENTS, DB_UPTIME
+  DISPLAY_SOURCE = true
+  DISPLAY_TIME   = true
+}
+
+
+//------------------------------------------------
+// uTimerScript 
+
+ProcessConfig = uTimerScript
+{
+  AppTick = 4
+  CommsTick = 4
+  paused = false
+
+  event  = var=VEHICLE_NAME,      val="ZACH",  time=0.25
+  event  = var=COLLABORATOR_NAME, val="WHALE", time=0.25
+  event  = var=NAV_X,             val=0,       time=0.25
+  event  = var=NAV_Y,             val=0,       time=0.25
+  event  = var=NAV_DEPTH,         val=2000,    time=0.25
+  event  = var=WHALE_NAV_X,       val=55000,   time=0.25
+  event  = var=WHALE_NAV_Y,       val=55000,   time=0.25
+  event  = var=WHALE_NAV_DEPTH,   val=1500,    time=0.25
+
+  reset_max  = 0
+  reset_time = all-posted
+}

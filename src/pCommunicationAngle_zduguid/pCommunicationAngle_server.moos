@@ -1,0 +1,40 @@
+ServerHost = oceanai.mit.edu
+ServerPort = 9011
+
+
+//------------------------------------------------
+// Antler 
+
+ProcessConfig = ANTLER
+{
+  MSBetweenLaunches = 200
+  Run = pCommunicationAngle_zduguid  @ NewConsole = false
+  Run = uXMS                         @ NewConsole = true
+}
+
+
+//------------------------------------------------
+// pCommunicationAngle_zduguid config block
+
+ProcessConfig = pCommunicationAngle_zduguid
+{
+   AppTick   = 4
+   CommsTick = 4
+}
+
+
+//------------------------------------------------
+// uXMS
+
+ProcessConfig = uXMS
+{
+  AppTick   = 4
+  CommsTick = 4
+
+  VAR            = VEHICLE_NAME, COLLABORATOR_NAME
+  VAR            = ACOUSTIC_PATH, ACOUSTIC_PATH_REF 
+  VAR            = CONNECTIVITY_LOCATION, CONNECTIVITY_LOCATION_REF
+  VAR            = DB_CLIENTS, DB_UPTIME
+  DISPLAY_SOURCE = true
+  DISPLAY_TIME   = true
+}

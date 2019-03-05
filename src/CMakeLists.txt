@@ -19,6 +19,7 @@ ADD_SUBDIRECTORY(pXRelayTest)
 ADD_SUBDIRECTORY(pExampleApp)
 ADD_SUBDIRECTORY(pOdometry)
 ADD_SUBDIRECTORY(pPrimeFactor)
+ADD_SUBDIRECTORY(pCommunicationAngle_zduguid)
 #ADD_SUBDIRECTORY(pFoobar)
 
 ##############################################################################
