@@ -20,7 +20,8 @@ ADD_SUBDIRECTORY(pExampleApp)
 ADD_SUBDIRECTORY(pOdometry)
 ADD_SUBDIRECTORY(pPrimeFactor)
 ADD_SUBDIRECTORY(pCommunicationAngle_zduguid)
-#ADD_SUBDIRECTORY(pFoobar)
+ADD_SUBDIRECTORY(pPointAssign)
+ADD_SUBDIRECTORY(pGenPath)
 
 ##############################################################################
 #                           END of CMakeLists.txt

@@ -147,9 +147,19 @@ bool CommunicationAngle_zduguid::Iterate()
   double elevation_angle = atan(circle_center_r / circle_center_z) * 
                            (-180.0 / M_PI);
 
+
+  cout << "local z:             " << local_z << endl;
+  cout << "local r:             " << local_r << endl;
+
+  cout << "circle center r pos: " << circle_center_r << endl;
+  cout << "circle center z pos: " << circle_center_z << endl;
+  cout << "circle radius:       " << circle_radius << endl;
+  cout << "maximum radius:      " << m_max_radius << "\n" << endl;
+
   // check if is possible to communicate without moving the vehicle
   // + use law of cosines to get the Transmission Loss of the communication
-  if (circle_radius <= m_max_radius){
+  if ((circle_radius  <= m_max_radius) || 
+      (circle_center_r > local_r)){
     double straight_dist   = hypot(local_r, local_z);
     double arc_theta       = acos(1 - (pow(straight_dist,2) / 
                                       (2 * pow(circle_radius,2))));

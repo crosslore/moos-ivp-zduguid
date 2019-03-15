@@ -1,0 +1,8 @@
+//------------------------------------------------------
+// pPointAssign Configuration Block  (Created from plugin)
+
+ProcessConfig = pPointAssign
+{
+  AppTick   = 4
+  CommsTick = 4
+}

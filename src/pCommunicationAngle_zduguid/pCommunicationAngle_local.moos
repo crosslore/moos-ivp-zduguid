@@ -56,11 +56,11 @@ ProcessConfig = uTimerScript
   event  = var=VEHICLE_NAME,      val="ZACH",  time=0.25
   event  = var=COLLABORATOR_NAME, val="WHALE", time=0.25
   event  = var=NAV_X,             val=0,       time=0.25
-  event  = var=NAV_Y,             val=0,       time=0.25
-  event  = var=NAV_DEPTH,         val=2000,    time=0.25
-  event  = var=WHALE_NAV_X,       val=55000,   time=0.25
-  event  = var=WHALE_NAV_Y,       val=55000,   time=0.25
-  event  = var=WHALE_NAV_DEPTH,   val=1500,    time=0.25
+  event  = var=NAV_Y,             val=0,       time=0.25 
+  event  = var=NAV_DEPTH,         val=5000,    time=0.25  // 2000 (angle 5.07)
+  event  = var=WHALE_NAV_X,       val=15000,   time=0.25
+  event  = var=WHALE_NAV_Y,       val=15000,   time=0.25
+  event  = var=WHALE_NAV_DEPTH,   val=5500,    time=0.25  // 1500 (angle 5.07)
 
   reset_max  = 0
   reset_time = all-posted
