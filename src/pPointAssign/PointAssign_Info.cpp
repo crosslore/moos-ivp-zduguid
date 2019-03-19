@@ -2,7 +2,7 @@
 /*   NAME: Zach Duguid                                          */
 /*   ORGN: MIT Cambridge MA                                     */
 /*   FILE: PointAssign_Info.cpp                                 */
-/*   DATE: Dec 29th 1963                                        */
+/*    DATE: March 14th, 2019                                    */
 /****************************************************************/
 
 #include <cstdlib>

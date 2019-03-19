@@ -6,6 +6,7 @@
 SET(SRC
   PointAssign.cpp
   PointAssign_Info.cpp
+  Point.cpp
   main.cpp
 )
 
@@ -16,5 +17,6 @@ TARGET_LINK_LIBRARIES(pPointAssign
    apputil
    mbutil
    m
+   geometry
    pthread)
 

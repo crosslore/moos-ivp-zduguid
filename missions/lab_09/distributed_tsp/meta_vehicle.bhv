@@ -6,7 +6,7 @@ initialize   RETURN  = false
 initialize   STATION_KEEP = false
 initialize   REFUEL_NEEDED = false
 initialize   REFUEL_TIMER = false
-initialize   LOITER  = true
+initialize   TRAVERSE  = true
 
 set MODE = ACTIVE {
   DEPLOY = true
@@ -22,9 +22,9 @@ set MODE = RETURNING {
   RETURN = true
 } 
 
-set MODE = LOITERING {
+set MODE = TRAVERSING {
   MODE = ACTIVE
-  LOITER = true
+  TRAVERSE = true
   REFUEL_NEEDED = false
 } 
 
@@ -48,7 +48,7 @@ Behavior = BHV_Timer
 {
   name         = refuel_timer  
   condition    = MODE==REFUELING
-  endflag      = LOITER=true
+  endflag      = TRAVERSE=true
   endflag      = REFUEL_NEEDED=false
   endflag      = REFUEL_TIMER=false
   perpetual    = true
@@ -60,34 +60,42 @@ Behavior = BHV_Timer
 //----------------------------------------------
 Behavior = BHV_Timer
 {
-  name         = no_refuel_needed_timer  
-  condition    = MODE==LOITERING
-  endflag      = LOITER=false
+  name         = traversal_timer  
+  condition    = MODE==TRAVERSING
+  endflag      = TRAVERSE=false
   endflag      = REFUEL_NEEDED=true
   perpetual    = true
-  duration     = 300    
+  duration     = 600    
   duration_reset = REFUEL_NEEDED=false
   duration_idle_decay = false 
 }  
 
 
 //----------------------------------------------
-Behavior = BHV_Loiter
+Behavior = BHV_Waypoint
 {
-  name      = loiter
+  name      = waypt_traverse
   pwt       = 100
-  condition = MODE==LOITERING
+  condition = MODE==TRAVERSING
+  endflag   = RETURN=true
+  updates   = TRAVERSE_UPDATES
 
-   post_suffix = A
-         speed = 1.3
-     clockwise = false
-        radius = 8.0
-     nm_radius = 15.0
-       polygon = radial::$(LOITER_POS), radius=20, pts=8, snap=1, label=$(VNAME)_LOITER
+  capture_radius = 3
+    capture_line = false
+   lead_to_start = false
+           order = normal 
+     post_suffix = $(VNAME)
+          repeat = 0 
+     slip_radius = 15 
+           speed = 1.2
 
-  visual_hints = nextpt_color=white, nextpt_lcolor=khaki
-  visual_hints = edge_color=orange, vertex_color=white
-  visual_hints = edge_size=1, vertex_size=2
+  visual_hints = vertex_size   = 3
+  visual_hints = edge_size     = 1 
+  visual_hints = vertex_color  = dodger_blue
+  visual_hints = edge_color    = white  
+  visual_hints = nextpt_color  = yellow 
+  visual_hints = nextpt_lcolor = aqua
+  visual_hints = nextpt_vertex_size = 5 
 }
 
 

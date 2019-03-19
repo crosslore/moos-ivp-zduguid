@@ -1,8 +1,8 @@
 /****************************************************************/
-/*   NAME: Zach Duguid                                             */
+/*   NAME: Zach Duguid                                          */
 /*   ORGN: MIT Cambridge MA                                     */
-/*   FILE: GenPath_Info.h                                      */
-/*   DATE: Dec 29th 1963                                        */
+/*   FILE: GenPath_Info.h                                       */
+/*    DATE: March 14th, 2019                                    */
 /****************************************************************/
 
 #ifndef GenPath_INFO_HEADER

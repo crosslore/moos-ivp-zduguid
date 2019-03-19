@@ -11,7 +11,7 @@ Community  = $(VNAME)
 //--------------------------------------------------------
 Processconfig = ANTLER
 {
-  MSBetweenLaunches = 200
+  MSBetweenLaunches = 300
 
   Run = MOOSDB          @ NewConsole = false
   Run = pPointAssign    @ NewConsole = false
@@ -40,8 +40,8 @@ ProcessConfig = uFldShoreBroker
   QBRIDGE  = DEPLOY, NODE_REPORT
   QBRIDGE  = STATION_KEEP, APPCAST_REQ
   QBRIDGE  = MOOS_MANUAL_OVERRIDE
+  QBRIDGE  = VISIT_POINT
 
-  BRIDGE   = src=VISIT_POINT_$V,    alias=VISIT_POINT
   BRIDGE   = src=REFUEL_NEEDED_ALL, alias=REFUEL_NEEDED
   BRIDGE   = src=RETURN_ALL,        alias=RETURN
   BRIDGE   = src=RETURN_$V,         alias=RETURN
@@ -54,12 +54,14 @@ ProcessConfig = uTimerScript
   AppTick    = 4
   CommsTick  = 4
 
+  paused = true
+
   rand_var = varname=RAND_X, min=-25,  max=200, key=at_post
   rand_var = varname=RAND_Y, min=-175, max=-25, key=at_post
 
-  event = var=VISIT_POINT, val="firstpoint", time=0.25
-  event = var=VISIT_POINT, val="x=$[RAND_X], y=$[RAND_Y], id=$[TCOUNT]", time=0.25, amt=100 
-  event = var=VISIT_POINT, val="lastpoint",  time=0.25
+  event = var=VISIT_POINT, val="firstpoint", time=2
+  event = var=VISIT_POINT, val="x=$[RAND_X], y=$[RAND_Y], id=$[TCOUNT]", time=2, amt=100 
+  event = var=VISIT_POINT, val="lastpoint",  time=2
 } 
 
 

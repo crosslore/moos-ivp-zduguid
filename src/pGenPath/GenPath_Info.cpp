@@ -1,8 +1,8 @@
 /****************************************************************/
-/*   NAME: Zach Duguid                                             */
+/*   NAME: Zach Duguid                                          */
 /*   ORGN: MIT Cambridge MA                                     */
-/*   FILE: GenPath_Info.cpp                               */
-/*   DATE: Dec 29th 1963                                        */
+/*   FILE: GenPath_Info.cpp                                     */
+/*    DATE: March 14th, 2019                                    */
 /****************************************************************/
 
 #include <cstdlib>
@@ -20,11 +20,8 @@ void showSynopsis()
 {
   blk("SYNOPSIS:                                                       ");
   blk("------------------------------------                            ");
-  blk("  The pGenPath application is used for               ");
-  blk("                                                                ");
-  blk("                                                                ");
-  blk("                                                                ");
-  blk("                                                                ");
+  blk("  The pGenPath application is used for collecting assigned      ");
+  blk("  points and generating a path for the vehicle to follow.       ");
 }
 
 //----------------------------------------------------------------
@@ -34,15 +31,15 @@ void showHelpAndExit()
 {
   blk("                                                                ");
   blu("=============================================================== ");
-  blu("Usage: pGenPath file.moos [OPTIONS]                   ");
+  blu("Usage: pGenPath file.moos [OPTIONS]                             ");
   blu("=============================================================== ");
   blk("                                                                ");
   showSynopsis();
   blk("                                                                ");
   blk("Options:                                                        ");
   mag("  --alias","=<ProcessName>                                      ");
-  blk("      Launch pGenPath with the given process name         ");
-  blk("      rather than pGenPath.                           ");
+  blk("      Launch pGenPath with the given process name               ");
+  blk("      rather than pGenPath.                                     ");
   mag("  --example, -e                                                 ");
   blk("      Display example MOOS configuration block.                 ");
   mag("  --help, -h                                                    ");
@@ -50,7 +47,7 @@ void showHelpAndExit()
   mag("  --interface, -i                                               ");
   blk("      Display MOOS publications and subscriptions.              ");
   mag("  --version,-v                                                  ");
-  blk("      Display the release version of pGenPath.        ");
+  blk("      Display the release version of pGenPath.                  ");
   blk("                                                                ");
   blk("Note: If argv[2] does not otherwise match a known option,       ");
   blk("      then it will be interpreted as a run alias. This is       ");
@@ -66,10 +63,10 @@ void showExampleConfigAndExit()
 {
   blk("                                                                ");
   blu("=============================================================== ");
-  blu("pGenPath Example MOOS Configuration                   ");
+  blu("pGenPath Example MOOS Configuration                             ");
   blu("=============================================================== ");
   blk("                                                                ");
-  blk("ProcessConfig = pGenPath                              ");
+  blk("ProcessConfig = pGenPath                                        ");
   blk("{                                                               ");
   blk("  AppTick   = 4                                                 ");
   blk("  CommsTick = 4                                                 ");
@@ -87,15 +84,14 @@ void showInterfaceAndExit()
 {
   blk("                                                                ");
   blu("=============================================================== ");
-  blu("pGenPath INTERFACE                                    ");
+  blu("pGenPath INTERFACE                                              ");
   blu("=============================================================== ");
   blk("                                                                ");
   showSynopsis();
   blk("                                                                ");
   blk("SUBSCRIPTIONS:                                                  ");
   blk("------------------------------------                            ");
-  blk("  NODE_MESSAGE = src_node=alpha,dest_node=bravo,var_name=FOO,   ");
-  blk("                 string_val=BAR                                 ");
+  blk("  VISIT_POINT                                                   ");
   blk("                                                                ");
   blk("PUBLICATIONS:                                                   ");
   blk("------------------------------------                            ");

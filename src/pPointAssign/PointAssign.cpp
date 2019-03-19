@@ -10,8 +10,10 @@
 #include <string>
 #include <stdio.h>
 #include <vector>
+
 #include "MBUtils.h"
 #include "ACTable.h"
+#include "Point.h"
 #include "PointAssign.h"
 
 using namespace std;
@@ -22,7 +24,9 @@ using namespace std;
 
 PointAssign::PointAssign()
 {
-  m_assign_by_region = false;
+  m_assign_by_region = true;
+  m_first_received   = false;
+  m_last_received    = false;
   m_vname1           = "GILDA";
   m_vname2           = "HENRY";
   m_vpublish1        = "VISIT_POINT_GILDA";
@@ -50,10 +54,15 @@ bool PointAssign::OnNewMail(MOOSMSG_LIST &NewMail)
     // handle incoming points variable 
     if ((key == "VISIT_POINT") && 
         (msg.IsString())){
-      m_point_queue.push_back(msg.GetString());
+      if      (msg.GetString() == "firstpoint") m_first_received = true;
+      else if (msg.GetString() == "lastpoint")  m_last_received  = true;
+      Point new_point = Point(msg.GetString());
+      m_point_list.push_back(new_point);
 
     // ignore outgoing mail that is going to the vehicles
-    } else if ((key == m_vpublish1) || (key == m_vpublish2)) {
+    } else if ((key == m_vpublish1) || 
+               (key == m_vpublish2) || 
+               (key == "UTS_PAUSE")) {
 
     // report any unhandled mail
     } else if(key != "APPCAST_REQ") {
@@ -81,41 +90,48 @@ bool PointAssign::Iterate()
 {
   AppCastingMOOSApp::Iterate();
 
-  // minimum size of the point queue for assigning points
-  if (m_point_queue.size() > 2) {
+  // wait to assign points until firstpoint and lastpoint are received 
+  if (m_first_received && m_last_received) {
 
     // iterate through the queue of points and assign them accordingly
-    STRING_LIST::iterator p;
-    for(p=m_point_queue.begin(); p!=m_point_queue.end(); p++) {
+    list<Point>::iterator p;
+    for(p=m_point_list.begin(); p!=m_point_list.end(); p++) {
 
       // publish the firstpoint and lastpoint markers when they arise
-      if ((*p == "firstpoint") || (*p == "lastpoint")) {
-        Notify(m_vpublish1, *p);
-        Notify(m_vpublish2, *p);
+      if ((p->GetString() == "firstpoint") || 
+          (p->GetString() == "lastpoint")) {
+        Notify(m_vpublish1, p->GetString());
+        Notify(m_vpublish2, p->GetString());
+
+      // otherwise publish view points to the vehicle and to pMarineViewer
       } else {
-        string original_string      = *p;
-        vector<string> point_vector = parseString(*p, ",");
+        string vcolor1   = "dodgerblue";
+        string vcolor2   = "fuchsia";
 
         // assign points into East and West regions 
         if (m_assign_by_region) {
-          string x_var    = point_vector.front();
-          string x_param  = biteStringX(x_var, '=');
-          int    x_coord  = stoi(x_var);
-          if (x_coord < m_mid_x) Notify(m_vpublish1, original_string);
-          else                   Notify(m_vpublish2, original_string);
+          if (p->GetX() < m_mid_x) {
+            Notify(m_vpublish1, p->GetString());
+            postViewPoint(p->GetX(), p->GetY(), p->GetIDStr(), vcolor1);
+          } else {
+            Notify(m_vpublish2, p->GetString());
+            postViewPoint(p->GetX(), p->GetY(), p->GetIDStr(), vcolor2);
+          }
 
         // assign points in alternating fashion based on their id number
         } else {
-          string id_var    = point_vector.back();
-          string id_param  = biteStringX(id_var, '=');
-          int    id_coord  = stoi(id_var);
-          if (id_coord % 2 == 0) Notify(m_vpublish1, original_string);
-          else                   Notify(m_vpublish2, original_string);
+          if (p->GetIDNum() % 2 == 0) {
+            Notify(m_vpublish1, p->GetString());
+            postViewPoint(p->GetX(), p->GetY(), p->GetIDStr(), vcolor1);
+          } else {
+            Notify(m_vpublish2, p->GetString());
+            postViewPoint(p->GetX(), p->GetY(), p->GetIDStr(), vcolor2);
+          }
         }
       }
     }
     // clear the queue to avoid assignment for every iterate loop
-    m_point_queue.clear();
+    m_point_list.clear();
   }
   AppCastingMOOSApp::PostReport();
   return(true);
@@ -123,8 +139,19 @@ bool PointAssign::Iterate()
 
 
 //---------------------------------------------------------
+// Procedure: postViewPoint()
+
+ void PointAssign::postViewPoint(int x, int y, string id, string color)
+ {
+   string point_string = "x="      + to_string(x) + ",y=" + to_string(y) 
+                       + ",label=" + id           + ",vertex_size=4"
+                       + ",vertex_color=" + color;
+   Notify("VIEW_POINT", point_string);
+ }
+
+
+//---------------------------------------------------------
 // Procedure: OnStartUp()
-//            happens before connection is open
 
 bool PointAssign::OnStartUp()
 {
@@ -149,12 +176,12 @@ bool PointAssign::OnStartUp()
     else if(param == "bar") {
       handled = true;
     }
-
     if(!handled)
       reportUnhandledConfigWarning(orig);
   }
 
-  registerVariables();	
+  registerVariables();
+  Notify("UTS_PAUSE","false");
   return(true);
 }
 
@@ -168,6 +195,7 @@ void PointAssign::registerVariables()
   Register("VISIT_POINT", 0);
   Register("VISIT_POINT_GILDA", 0);
   Register("VISIT_POINT_HENRY", 0);
+  Register("UTS_PAUSE",0);
 }
 
 
@@ -181,6 +209,8 @@ bool PointAssign::buildReport()
   m_msgs << "============================================ \n";
   m_msgs << "Vehicle 1 Name: " << m_vname1 << endl;
   m_msgs << "Vehicle 2 Name: " << m_vname2 << endl;
+  m_msgs << "First Received: " << to_string(m_first_received) << endl;
+  m_msgs << "Last Received:  " << to_string(m_last_received)  << endl;
   m_msgs << "Bounding Box:   " 
          << "<" + to_string(m_min_x) << "," << to_string(m_min_y) << ">" << endl
          << "                " 
@@ -189,7 +219,7 @@ bool PointAssign::buildReport()
          << "<" + to_string(m_max_x) << "," << to_string(m_max_y) << ">" << endl
          << "                " 
          << "<" + to_string(m_max_x) << "," << to_string(m_min_y) << ">" << endl;
-  m_msgs << "Size of Queue:  " << to_string(m_point_queue.size()) << "\n" << endl;
+  m_msgs << "Size of Queue:  " << to_string(m_point_list.size()) << "\n" << endl;
   return(true);
 }
 

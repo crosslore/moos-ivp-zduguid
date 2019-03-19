@@ -10,6 +10,8 @@
 
 #include <list>
 #include <string>
+
+#include "Point.h"
 #include "MOOS/libMOOS/Thirdparty/AppCasting/AppCastingMOOSApp.h"
 
 class PointAssign : public AppCastingMOOSApp
@@ -23,15 +25,14 @@ protected: // Standard MOOSApp functions to overload
   bool Iterate();
   bool OnConnectToServer();
   bool OnStartUp();
-
- protected: // Standard AppCastingMOOSApp function to overload 
   bool buildReport();
-
- protected:
   void registerVariables();
+  void postViewPoint(int x, int y, std::string id, std::string color);
 
  private: // Configuration variables
   bool m_assign_by_region;
+  bool m_first_received;
+  bool m_last_received;
   int  m_min_x;
   int  m_max_x;
   int  m_min_y;
@@ -41,7 +42,7 @@ protected: // Standard MOOSApp functions to overload
   std::string m_vname2;
   std::string m_vpublish1;
   std::string m_vpublish2;
-  std::list<std::string>  m_point_queue;
+  std::list<Point>  m_point_list;
 };
 
 #endif 

@@ -9,9 +9,10 @@ Community  = $(VNAME)
 //------------------------------------------------------------
 Processconfig = ANTLER
 {
-  MSBetweenLaunches = 50
+  MSBetweenLaunches = 100
    
   Run = MOOSDB             @ NewConsole = false
+  Run = pGenPath           @ NewConsole = false
   Run = uSimMarine         @ NewConsole = false
   Run = pLogger            @ NewConsole = false
   Run = pNodeReporter      @ NewConsole = false
@@ -24,6 +25,7 @@ Processconfig = ANTLER
 }
  
 #include plug_uSimMarine.moos
+#include plug_pGenPath.moos
 #include plug_pLogger.moos
 #include plug_pNodeReporter.moos
 #include plug_pMarinePID.moos
