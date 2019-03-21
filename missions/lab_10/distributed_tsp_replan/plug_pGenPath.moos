@@ -1,0 +1,8 @@
+//------------------------------------------------------
+// pGenPath Configuration Block  (Created from plugin)
+
+ProcessConfig = pGenPath
+{
+  AppTick   = 4
+  CommsTick = 4
+}

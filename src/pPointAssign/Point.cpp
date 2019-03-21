@@ -62,3 +62,13 @@ string Point::GetString()
             ",id=" +  m_id_str);
   }
 }
+
+//---------------------------------------------------------
+// PointEqual
+
+bool Point::PointEqual(Point p)
+{
+  return((m_x_coord == p.GetX()) &&
+         (m_y_coord == p.GetY()) && 
+         (m_id_num  == p.GetIDNum()));
+}

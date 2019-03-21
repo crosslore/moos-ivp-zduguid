@@ -29,15 +29,18 @@ Point::Point(string visit_point_string)
     string id_var    = point_vector[2];
     string  x_param  = biteStringX(x_var, '=');
     string  y_param  = biteStringX(y_var, '=');
+    string id_param  = biteStringX(id_var,'=');
     m_x_coord        = stoi(x_var);
     m_y_coord        = stoi(y_var);
-    m_id             = id_var;
+    m_id_num         = stoi(id_var);
+    m_id_str         = id_var;
 
   // encode the first and last point as a Point object
   } else {  
     m_x_coord = 0;
     m_y_coord = 0;
-    m_id = visit_point_string;
+    m_id_num  = 0;
+    m_id_str  = visit_point_string;
   }
 }
 
@@ -48,14 +51,24 @@ Point::Point(string visit_point_string)
 string Point::GetString()
 {
   // return the firstpoint or lastpoint string directly
-  if ((m_id == "firstpoint") || 
-      (m_id == "lastpoint")) {
-    return(m_id);
+  if ((m_id_str == "firstpoint") || 
+      (m_id_str == "lastpoint")) {
+    return(m_id_str);
 
   // otherwise parse the Point object into a valid string
   } else {
-    return ( "x=" +  to_string(m_x_coord) + 
-            ",y=" +  to_string(m_y_coord) +
-            ",id=" + m_id);
+    return ( "x="  +  to_string(m_x_coord) + 
+            ",y="  +  to_string(m_y_coord) +
+            ",id=" +  m_id_str);
   }
+}
+
+//---------------------------------------------------------
+// PointEqual
+
+bool Point::PointEqual(Point p)
+{
+  return((m_x_coord == p.GetX()) &&
+         (m_y_coord == p.GetY()) && 
+         (m_id_num  == p.GetIDNum()));
 }

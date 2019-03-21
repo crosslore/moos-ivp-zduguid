@@ -35,19 +35,21 @@ class GenPath : public AppCastingMOOSApp
 
   protected:
     void registerVariables();
-    double GetDistance(int x1, int y1, int x2, int y2);
-    Point  GetClosestPoint(int x, int y);
+    double GetDistance(double x1, double y1, double x2, double y2);
+    Point  GetClosestPoint(double x, double y);
 
   private:
-    bool m_first_received;
-    bool m_last_received;
-    uint m_capture_radius;
-    uint m_slip_radius;
-    uint m_points_received;
-    uint m_points_planned;
-    uint m_points_visited;
-    uint m_points_unvisited;
+    double m_nav_x;
+    double m_nav_y;
+    bool   m_first_received;
+    bool   m_last_received;
+    uint   m_visit_radius;
+    uint   m_points_received;
+    uint   m_points_planned;
     std::list<Point> m_point_list;
+    std::list<Point> m_point_copy;
+    std::list<Point> m_point_visited;
+    std::list<Point> m_point_unvisited;
 };
 
 #endif 

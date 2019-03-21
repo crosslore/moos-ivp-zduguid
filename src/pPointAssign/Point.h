@@ -18,9 +18,10 @@ class Point
 public:
   Point(std::string visit_point_string);
   ~Point(){};
-  int GetX(){return m_x_coord;};
-  int GetY(){return m_y_coord;};
-  int GetIDNum(){return m_id_num;};
+  int  GetX(){return m_x_coord;};
+  int  GetY(){return m_y_coord;};
+  int  GetIDNum(){return m_id_num;};
+  bool PointEqual(Point p);
   std::string GetIDStr(){return m_id_str;};
   std::string GetString();
 

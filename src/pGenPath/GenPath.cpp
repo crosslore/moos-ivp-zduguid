@@ -26,14 +26,13 @@ using namespace std;
 
 GenPath::GenPath()
 {
+  m_nav_x            = 0.0;
+  m_nav_y            = 0.0;
   m_first_received   = false;
   m_last_received    = false;
-  m_capture_radius   = 3;
-  m_slip_radius      = 15;
+  m_visit_radius     = 3;
   m_points_received  = 0;
   m_points_planned   = 0;
-  m_points_visited   = 0;
-  m_points_unvisited = 0;
 }
 
 
@@ -54,18 +53,51 @@ bool GenPath::OnNewMail(MOOSMSG_LIST &NewMail)
         (msg.IsString())){
       if      (msg.GetString() == "firstpoint") m_first_received = true;
       else if (msg.GetString() == "lastpoint")  m_last_received  = true;
-      else    {m_points_received++;             m_points_unvisited++;}
-      Point new_point = Point(msg.GetString());
-      m_point_list.push_back(new_point);
+      else     m_point_unvisited.push_back(Point(msg.GetString()));
+      m_points_received++;
+      m_point_list.push_back(Point(msg.GetString()));
+      m_point_copy.push_back(Point(msg.GetString()));
+    }
+
+    // handle vehicle navigation updates
+    else if (key == "NAV_X") {m_nav_x = msg.GetDouble();}
+    else if (key == "NAV_Y") {m_nav_y = msg.GetDouble();}
 
     // ignore mail for traverse updates 
-    } else if (key == "TRAVERSE_UPDATES") {
+    else if (key == "TRAVERSE_UPDATES") {}
+
+    // generate a new path if any points have been missed
+    else if (key == "GENPATH_REGENERATE") {
+
+      // load points on the queue again
+      if (m_point_unvisited.size() > 0) {
+        list<Point>::iterator p;
+        for(p=m_point_unvisited.begin(); p!=m_point_unvisited.end(); p++) {
+          m_point_list.push_back(Point(p->GetString()));
+        }
+      } 
+
+      // load up the original set of points for the next DEPLOY action
+      else {
+        Notify("STATION_KEEP", "true");
+        m_point_list.clear();
+        m_point_visited.clear();
+        m_point_unvisited.clear();
+        list<Point>::iterator p;
+        for(p=m_point_copy.begin(); p!=m_point_copy.end(); p++) {
+          if ((p->GetString() != "firstpoint") && 
+              (p->GetString() != "lastpoint")) {
+            m_point_list.push_back(Point(p->GetString()));
+            m_point_unvisited.push_back(Point(p->GetString()));
+          }
+        }
+      }
+    }
 
     // report error for mail not handled by AppCastingMOOSApp
-    } else if(key != "APPCAST_REQ") 
-      reportRunWarning("Unhandled Mail: " + key);
-   }
-   return(true);
+    else if(key != "APPCAST_REQ") { reportRunWarning("Unhandled Mail: " + key);}
+  }
+  return(true);
 }
 
 
@@ -86,11 +118,11 @@ bool GenPath::Iterate()
 {
   AppCastingMOOSApp::Iterate();
 
-  // wait to generate path until firstpoint and lastpoint are received 
+  // generate path using Points stored in m_point_list 
   if (m_first_received && m_last_received) {
 
     // initialize variables to keep track of 
-    int  current_x = 0;
+    int  current_x = 88;
     int  current_y = 0;
     bool update_made = false;
     XYSegList traverse_seglist;
@@ -109,9 +141,20 @@ bool GenPath::Iterate()
     if (update_made){
       string update_str = "points = " + traverse_seglist.get_spec();
       Notify("TRAVERSE_UPDATES", update_str);
-      AppCastingMOOSApp::PostReport();
     }
   }
+
+  // point is considered visited if it is within the visit radius of the point
+  list<Point>::iterator p;
+  for(p=m_point_unvisited.begin(); p!=m_point_unvisited.end();) {
+    if (GetDistance(p->GetX(), p->GetY(), m_nav_x, m_nav_y) <= m_visit_radius) {
+      m_point_visited.push_back(Point(p->GetString()));
+      p = m_point_unvisited.erase(p);
+    }
+    else {p++;} 
+  }
+
+  AppCastingMOOSApp::PostReport();
   return(true);
 }
 
@@ -119,10 +162,10 @@ bool GenPath::Iterate()
 //---------------------------------------------------------
 // Procedure: GetDistance()
 
-double GenPath::GetDistance(int x1, int y1, int x2, int y2)
+double GenPath::GetDistance(double x1, double y1, double x2, double y2)
 {
-  int delta_x = x2 - x1;
-  int delta_y = y2 - y1;
+  double delta_x = x2 - x1;
+  double delta_y = y2 - y1;
   return(hypot(delta_x, delta_y));
 }
 
@@ -130,7 +173,7 @@ double GenPath::GetDistance(int x1, int y1, int x2, int y2)
 //---------------------------------------------------------
 // Procedure: GetClosestPoint()
 
-Point GenPath::GetClosestPoint(int x_ref, int y_ref)
+Point GenPath::GetClosestPoint(double x_ref, double y_ref)
 {
   // iterate through the list of points received
   double closest_distance = numeric_limits<double>::max();
@@ -197,8 +240,11 @@ bool GenPath::OnStartUp()
 void GenPath::registerVariables()
 {
   AppCastingMOOSApp::RegisterVariables();
+  Register("NAV_X", 0);
+  Register("NAV_Y", 0);
   Register("VISIT_POINT", 0);
-  Register("TRAVERSE_UPDATES", 0);
+  Register("RETURN_UPDATES", 0);
+  Register("GENPATH_REGENERATE", 0);
 }
 
 
@@ -212,12 +258,16 @@ bool GenPath::buildReport()
   m_msgs << "============================================ \n";
   m_msgs << "First Received:   " << to_string(m_first_received) << endl;
   m_msgs << "Last Received:    " << to_string(m_last_received)  << endl;
-  m_msgs << "Points Received:  " << m_points_received  << endl;
-  m_msgs << "Points Planned:   " << m_points_planned   << endl;  
-  m_msgs << "Points Visited:   " << m_points_visited   << endl;
-  m_msgs << "Points Unvisited: " << m_points_unvisited << endl;
-  m_msgs << "Capture Radius:   " << m_capture_radius   << endl;
-  m_msgs << "Slip Radius:      " << m_slip_radius      << endl;
+  m_msgs << "Points Received:  " << m_points_received << "\n"   << endl;
+  m_msgs << "TOUR STATUS"        << endl;
+  m_msgs << "------------------" << endl; 
+  m_msgs << "Capture Radius:   " << m_visit_radius              << endl;
+  m_msgs << "Points Visited:   " << m_point_visited.size()      << endl;
+  m_msgs << "Points Unvisited: " << m_point_unvisited.size()    << endl;
+  m_msgs << "Points Planned:   " << m_points_planned            << endl;
+  m_msgs << "Points in Queue:  " << m_point_list.size()         << endl;
+  m_msgs << "Current X:        " << m_nav_x                     << endl;
+  m_msgs << "Current Y:        " << m_nav_y                     << endl;
   return(true);
 }
 
