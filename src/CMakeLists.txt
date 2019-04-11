@@ -22,6 +22,9 @@ ADD_SUBDIRECTORY(pPrimeFactor)
 ADD_SUBDIRECTORY(pCommunicationAngle_zduguid)
 ADD_SUBDIRECTORY(pPointAssign)
 ADD_SUBDIRECTORY(pGenPath)
+ADD_SUBDIRECTORY(pHazardPath)
+ADD_SUBDIRECTORY(uFldHazardMgrX)
+ADD_SUBDIRECTORY(pOptSensor)
 
 ##############################################################################
 #                           END of CMakeLists.txt
