@@ -148,8 +148,8 @@ IvPFunction* BHV_Pulse::onRunState()
 
   // if waypoint update occurred in the current iteration, reset the time
   if (IvPBehavior::getBufferTimeVal("WPT_INDEX") == 0) {
-      // only generate pulse once waypoint is reached (not after DEPLOY)
-      if (getBufferDoubleVal("WPT_INDEX", ok_w) > 0){
+    // only generate pulse once waypoint is reached (not after DEPLOY)
+    if (getBufferDoubleVal("WPT_INDEX", ok_w) > 0){
       m_wpt_time = m_curr_time; 
     } 
   }
