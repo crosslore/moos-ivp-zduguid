@@ -44,7 +44,7 @@ done
 #    Note: Failed nsplug will abort launch due to bash -e on line 1
 #    Note: Undef macros will be aletered to user with nsplug -i flag
 #---------------------------------------------------------
-nsplug meta_shoreside.moos targ_shoreside.moos -i -f WARP=$TIME_WARP \
+nsplug meta_shoreside_fld.moos targ_shoreside.moos -i -f WARP=$TIME_WARP \
        SHORE_PSHARE=$SHORE_PSHARE  SHORE_MOOSDB=$SHORE_MOOSDB         \
        SHORE_IPADDR=$SHORE_IPADDR  
 
