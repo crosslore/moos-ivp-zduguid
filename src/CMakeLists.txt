@@ -25,6 +25,10 @@ ADD_SUBDIRECTORY(pGenPath)
 ADD_SUBDIRECTORY(pHazardPath)
 ADD_SUBDIRECTORY(uFldHazardMgrX)
 ADD_SUBDIRECTORY(pOptSensor)
+ADD_SUBDIRECTORY(pFrontEstimateX)
+ADD_SUBDIRECTORY(pSpiralPath)
+ADD_SUBDIRECTORY(pEncircle)
+ADD_SUBDIRECTORY(pVehicleDataExchange)
 
 ##############################################################################
 #                           END of CMakeLists.txt
