@@ -22,9 +22,16 @@ class SpiralPath : public AppCastingMOOSApp
     bool OnConnectToServer();
     bool OnStartUp();
     bool setLoiterDelta(std::string);
-    void handleSpiralRequest(std::string);
-    void handleParameterEstimate(std::string);
-    void handleLoiterReport(std::string);
+    bool setCaptain(std::string);
+    bool handleNodeReport(std::string);
+    bool handleNodeReportLocal(std::string);
+    bool handleSpiralRequest(std::string);
+    bool handleParameterEstimate(std::string);
+    bool handleLoiterReport(std::string);
+    bool handleNavX(std::string);
+    bool handleNavY(std::string);
+    bool handleNewSensorReport(std::string);
+
 
   protected: // Standard AppCastingMOOSApp function to overload 
     bool buildReport();
@@ -32,7 +39,15 @@ class SpiralPath : public AppCastingMOOSApp
   protected:
     void registerVariables();
 
-  private: // State variables
+  private:
+    // general information
+    std::string m_captain;
+    std::string m_os_name;
+    std::string m_collab_name;
+    std::string m_grp_filter;
+    uint        m_total_node_reports;
+    double      m_os_tstamp;
+
     // loiter parameters
     double m_osx;
     double m_osy;
@@ -47,6 +62,8 @@ class SpiralPath : public AppCastingMOOSApp
     std::string m_est_vname;
     uint   m_num_estimate_rcd;
     uint   m_num_cycles;
+    uint   m_num_msgs_sent;
+    uint   m_num_msgs_received;
     bool   m_req_new_estimate;
     double m_est_offset;
     double m_est_angle;

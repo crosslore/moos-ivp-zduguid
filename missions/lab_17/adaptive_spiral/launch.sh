@@ -4,20 +4,11 @@
 #-------------------------------------------------------
 TIME_WARP=1
 JUST_MAKE="no"
-COOL_FAC=50
+COOL_FAC=500
 COOL_STEPS=1000
 CONCURRENT="true"
-ADAPTIVE="false"
-SURVEY_X=70
-SURVEY_Y=-100
-HEIGHT1=150
-HEIGHT2=150
-WIDTH1=120
-WIDTH2=120
-LANE_WIDTH1=25
-LANE_WIDTH2=25
-DEGREES1=270
-DEGREES2=0
+ADAPTIVE="true"
+
 for ARGI; do
     #help:
     if [ "${ARGI}" = "--help" -o "${ARGI}" = "-h" ] ; then 
@@ -79,11 +70,11 @@ fi
 #  Part 2: Create the .moos and .bhv files. 
 #-------------------------------------------------------
 
-VNAME1="archie"      # The first  vehicle community
+VNAME1="jon"      # The first  vehicle community
 START_POS1="0,0"  
 
-VNAME2="betty"
-START_POS2="0,0"
+VNAME2="arya"
+START_POS2="20,-10"
 
 nsplug meta_shoreside.moos targ_shoreside.moos -f WARP=$TIME_WARP \
    VNAME="shoreside" SHARE_LISTEN=$SHORE_LISTEN
@@ -102,7 +93,7 @@ nsplug meta_vehicle.bhv targ_$VNAME1.bhv -f VNAME=$VNAME1      \
 
 #start second vehicle:                                                                                                   
 nsplug meta_vehicle.moos targ_$VNAME2.moos -f WARP=$TIME_WARP  \
-   VNAME=$VNAME2      START_POS=$START_POS1                    \
+   VNAME=$VNAME2      START_POS=$START_POS2                    \
    VPORT="9002"       SHARE_LISTEN="9302"                      \
    VTYPE=KAYAK          COOL_FAC=$COOL_FAC  COOL_STEPS=$COOL_STEPS\
    CONCURRENT=$CONCURRENT  ADAPTIVE=$ADAPTIVE

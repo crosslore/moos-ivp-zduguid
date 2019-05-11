@@ -44,6 +44,7 @@ Behavior = BHV_Waypoint
   condition    = MODE==SCANNING
   updates      = SCAN_UPDATES
   activeflag   = SURVEY_UNDERWAY = true
+  runflag      = UTS_RETURN_PAUSE = false
   endflag      = SCAN = false
   endflag      = SPIRAL = true
   endflag      = ENCIRCLE_ACTIVE = true
@@ -52,7 +53,7 @@ capture_radius = 3
   capture_line = false                     
  lead_to_start = false                   
          order = normal                   
-        points = format=radial, x=60, y=-105, radius=65, pts=20, snap=1
+        points = format=radial, x=60, y=-105, radius=60, pts=20, snap=1
    post_suffix = $(VNAME)                
         repeat = 0                       
    slip_radius = 15                      
@@ -81,8 +82,9 @@ Behavior = BHV_Loiter
 
 
          speed = 2   // meters per second
-       polygon = radial:: x=60, y=-105, radius=30, pts=10
+       polygon = radial:: x=80, y=-105, radius=30, pts=10
      speed_alt = 1.5
+     clockwise = false
 
   visual_hints = vertex_size        = 5          
   visual_hints = edge_size          = 3          

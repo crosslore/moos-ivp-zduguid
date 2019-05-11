@@ -5,10 +5,14 @@
 /*    DATE: 2019 May                                        */
 /************************************************************/
 
+#include <algorithm> 
 #include <iterator>
 #include <string>
 #include "MBUtils.h"
 #include "ACTable.h"
+#include "NodeRecordUtils.h"
+#include "NodeMessage.h"
+#include "NodeMessageUtils.h"
 #include "SpiralPath.h"
 #include "XYObject.h"
 #include "XYVector.h"
@@ -29,11 +33,13 @@ SpiralPath::SpiralPath()
   m_loiter_y          = 0;
   m_loiter_radius     = 0;
   m_loiter_delta      = 0;
-  m_loiter_offset     = 0;
+  m_loiter_offset     = 120;
 
   // variables parsed from the Front Estimator
   m_num_estimate_rcd  = 0;
   m_num_cycles        = 0;
+  m_num_msgs_sent     = 0;
+  m_num_msgs_received = 0;
   m_req_new_estimate  = false;
   m_est_offset        = 0;
   m_est_angle         = 0;
@@ -59,19 +65,22 @@ bool SpiralPath::OnNewMail(MOOSMSG_LIST &NewMail)
     CMOOSMsg &msg = *p;
     string key    = msg.GetKey();
     string sval   = msg.GetString(); 
+    bool handled  = false;
 
-    if(key == "SPIRAL_REPORT_PARAMS")
-      handleParameterEstimate(sval);
-
+    if(key == "NODE_REPORT")
+      handled = handleNodeReport(sval);
+    else if(key == "NODE_REPORT_LOCAL")
+      handled = handleNodeReportLocal(sval);
+    else if(key == "UCTD_MSMNT_REPORT")
+      handled = handleNewSensorReport(sval);
+    else if(key == "SPIRAL_REPORT_PARAMS")
+      handled = handleParameterEstimate(sval);
     else if(key == "LOITER_REPORT")
-      handleLoiterReport(sval);
-
+      handled = handleLoiterReport(sval);
     else if(key == "NAV_X")
-      m_osx = atof(sval.c_str());
-
+      handled = handleNavX(sval);
     else if(key == "NAV_Y")
-      m_osy = atof(sval.c_str());
-
+      handled = handleNavY(sval);
     else if(key != "APPCAST_REQ") // handled by AppCastingMOOSApp
       reportRunWarning("Unhandled Mail: " + key);
    }
@@ -97,13 +106,6 @@ bool SpiralPath::OnConnectToServer()
 bool SpiralPath::Iterate()
 {
   AppCastingMOOSApp::Iterate();
-  
-  // // request a new estimate report
-  // // if (m_req_new_estimate) {
-  // if (true) {
-  //   // m_req_new_estimate = false;
-  //   m_num_estimate_req++;
-  // }
 
   AppCastingMOOSApp::PostReport();
   return(true);
@@ -134,7 +136,8 @@ bool SpiralPath::OnStartUp()
 
     if(param == "delta") 
       handled = setLoiterDelta(value);
-
+    if(param == "captain") 
+      handled = setCaptain(value);
     if(!handled)
       reportUnhandledConfigWarning(orig);
   }
@@ -147,7 +150,7 @@ bool SpiralPath::OnStartUp()
 //------------------------------------------------------------
 // Procedure: handleParameterEstimate()
 
-void SpiralPath::handleParameterEstimate(string request_string)
+bool SpiralPath::handleParameterEstimate(string request_string)
 {
   m_num_estimate_rcd++;
   m_latest_estimate = request_string;
@@ -206,12 +209,12 @@ void SpiralPath::handleParameterEstimate(string request_string)
 
   // adjust the loiter position depending upon the current parameters
   m_loiter_offset += m_loiter_delta;
-  m_loiter_radius  = m_est_amplitude;
+  m_loiter_radius  = max(min(m_est_amplitude, 50.0), 20.0);
   m_loiter_x = front_vector.xpos() + m_loiter_offset*cos(m_est_angle*PI/180.0);
   m_loiter_y = front_vector.ypos() + m_loiter_offset*sin(m_est_angle*PI/180.0);
 
   // adjust loiter delta parameter to keep the vehicle within the op region
-  if (m_loiter_x > 120)
+  if (m_loiter_x > 130)
     m_loiter_delta = - abs(m_loiter_delta);
   if (m_loiter_x < -20) 
     m_loiter_delta = abs(m_loiter_delta);
@@ -227,48 +230,171 @@ void SpiralPath::handleParameterEstimate(string request_string)
   Notify("VIEW_VECTOR", front_vector.get_spec()); 
   Notify("VIEW_VECTOR", amplitude_vector.get_spec()); 
   Notify("VIEW_POINT",  loiter_center.get_spec());
-  // TODO
-  // update the encircle behavior 
-  //  -> polygon = radial:: x=60, y=-105, radius=30, pts=10
-  //  -> pEncircle subscribed to "ENCIRCLE_POSITION"
-  //  -> pEncircle update form: "circle_position = x=60,y=-105,radius=30"
-  ostringstream encircle_os;
-  encircle_os << "polygon = radial:: "
-              << "x="       << m_loiter_x 
-              << ",y="      << m_loiter_y 
-              << ",radius=" << m_loiter_radius
-              << ",pts=10"; 
-  string encircle_str = encircle_os.str();
-  if (m_loiter_radius > 0)
-    Notify("SPIRAL_UPDATES", encircle_str);
-  // Notify("ENCIRCLE_ACTIVE", "false");
+  return(true);
 }
 
 
 //------------------------------------------------------------
 // Procedure: handleLoiterReport()
 
-void SpiralPath::handleLoiterReport(string request_string)
+bool SpiralPath::handleLoiterReport(string request_string)
 {
-  string index = tokStringParse(request_string, "index", ',', '=');
+  string index   = tokStringParse(request_string, "index", ',', '=');
   if (index == "0"){
     m_num_cycles++;
-    // // TODO
-    // // update the encircle behavior 
-    // //  -> polygon = radial:: x=60, y=-105, radius=30, pts=10
-    // //  -> pEncircle subscribed to "ENCIRCLE_POSITION"
-    // //  -> pEncircle update form: "circle_position = x=60,y=-105,radius=30"
-    // ostringstream encircle_os;
-    // encircle_os << "polygon = radial:: "
-    //             << "x="       << m_loiter_x 
-    //             << ",y="      << m_loiter_y 
-    //             << ",radius=" << m_loiter_radius
-    //             << ",pts=10"; 
-    // string encircle_str = encircle_os.str();
-    // if (m_loiter_radius > 0)
-    //   Notify("SPIRAL_UPDATES", encircle_str);
-    // // Notify("ENCIRCLE_ACTIVE", "false");
+    // update the Loiter behavior after every loiter cycle 
+    //  -> MOOS Variable: "SPIRAL_UPDATES" (publishes to BHV_Loiter)
+    //  -> MOOS Value:    polygon = radial:: x=60, y=-105, radius=30, pts=10
+    ostringstream loiter_os;
+    loiter_os << "polygon = radial:: "
+              << "x="       << m_loiter_x 
+              << ",y="      << m_loiter_y 
+              << ",radius=" << m_loiter_radius
+              << ",pts=10"; 
+    string loiter_str = loiter_os.str();
+
+    // update the pEncircle app of the new loiter position
+    //  -> MOOS Variable: "ENCIRCLE_POSITION"
+    //  -> MOOS Value:    x=60,y=-105,radius=30
+    ostringstream encircle_os;
+    encircle_os << "x="       << m_loiter_x 
+                << ",y="      << m_loiter_y 
+                << ",radius=" << m_loiter_radius;
+    string encircle_str = encircle_os.str();
+
+    // only update after the radius has been perceived 
+    if (m_loiter_radius > 0) {
+
+      // hard code AUV that will serve as the decision maker
+      //  -> this allows the two vehicles to follow the same loiter patterns
+      if (m_captain == m_os_name){
+        // send the Loiter and pEncircle updates to the captain
+        Notify("SPIRAL_UPDATES", loiter_str);
+        Notify("ENCIRCLE_POSITION", encircle_str);
+
+        // send the Loiter update to the collaborator
+        NodeMessage node_message_loiter;
+        node_message_loiter.setSourceNode(m_os_name);
+        node_message_loiter.setDestNode(m_collab_name);
+        node_message_loiter.setVarName("SPIRAL_UPDATES");
+        node_message_loiter.setStringVal(loiter_str);
+        string msg_loiter = node_message_loiter.getSpec();
+        Notify("NODE_MESSAGE_LOCAL", msg_loiter);
+
+        // send the pEncircle update to the collaborator
+        NodeMessage node_message_encircle;
+        node_message_encircle.setSourceNode(m_os_name);
+        node_message_encircle.setDestNode(m_collab_name);
+        node_message_encircle.setVarName("ENCIRCLE_POSITION");
+        node_message_encircle.setStringVal(encircle_str);
+        string msg_encircle = node_message_encircle.getSpec();
+        Notify("NODE_MESSAGE_LOCAL", msg_encircle);
+      }
+    }
   }
+  return(true);
+}
+
+
+//---------------------------------------------------------
+// Procedure: handleNodeReport()
+
+bool SpiralPath::handleNodeReport(string report)
+{
+  m_total_node_reports++;
+  
+  // Part 1: Parse the node record and post warning if bad
+  NodeRecord new_node_record = string2NodeRecord(report, true);
+  string err_msg;
+  bool ok = new_node_record.valid("name,x,y,speed,heading", err_msg);
+  if(!ok) {
+    reportRunWarning("Bad CN NodeReport: " + err_msg);
+    return(false);
+  }
+
+  if(m_grp_filter != "") {
+    if(m_grp_filter != tolower(new_node_record.getGroup()))
+      return(true);
+  }    
+
+  string vname = new_node_record.getName();    
+  m_collab_name= vname;    
+  return(true);
+}
+
+
+//---------------------------------------------------------
+// Procedure: handleNodeReportLocal()
+
+bool SpiralPath::handleNodeReportLocal(string report)
+{
+  NodeRecord record = string2NodeRecord(report, true);
+
+  string err_msg;
+  bool ok = record.valid("name,x,y,speed,heading", err_msg);
+  if(!ok) {
+    reportRunWarning("Bad OS NodeReport: " + err_msg);
+    return(false);
+  }  
+  m_os_name   = record.getName();
+  m_os_tstamp = m_curr_time;
+  return(true);
+}
+
+
+//------------------------------------------------------------
+// Procedure: handleNavX()
+
+bool SpiralPath::handleNavX(string sval)
+{
+  if(!isNumber(sval))
+    return(false);
+  m_osx = atof(sval.c_str());
+  return(true);
+}
+
+
+//------------------------------------------------------------
+// Procedure: handleNavY()
+
+bool SpiralPath::handleNavY(string sval)
+{
+  if(!isNumber(sval))
+    return(false);
+  m_osy = atof(sval.c_str());
+  return(true);
+}
+
+
+//------------------------------------------------------------
+// Procedure: handleNewSensorReport()
+
+bool SpiralPath::handleNewSensorReport(string sval)
+{
+  //Parse the message
+  string report_vname = tokStringParse(sval, "vname", ',', '=');
+
+  // Increase the num messages received if from collaborator
+  if (report_vname == m_collab_name) {
+    m_num_msgs_received++;
+    return(true);
+  }
+
+  // Otherwise send the report message to the opposite vehicle
+  else if (report_vname == m_os_name){
+    //Build and  message
+    NodeMessage node_message;
+    node_message.setSourceNode(m_os_name); 
+    node_message.setDestNode(m_collab_name);
+    node_message.setVarName("UCTD_MSMNT_REPORT");
+    node_message.setStringVal(sval);
+    string msg = node_message.getSpec();
+    m_num_msgs_sent++;
+    Notify("NODE_MESSAGE_LOCAL", msg);
+    return(true);
+  }
+  else
+    return(false);
 }
 
 
@@ -286,7 +412,20 @@ bool SpiralPath::setLoiterDelta(string str)
   else if (dval < 0)
     dval = 0;
 
-  m_loiter_delta = dval;
+  m_loiter_delta = -abs(dval);
+  return(true);
+}
+
+
+//---------------------------------------------------------
+// Procedure: setCaptain()
+
+bool SpiralPath::setCaptain(string str)
+{
+  if(isNumber(str))
+    return(false);
+
+  m_captain = str;
   return(true);
 }
 
@@ -298,7 +437,10 @@ void SpiralPath::registerVariables()
 {
   AppCastingMOOSApp::RegisterVariables();
   Register("SPIRAL_REPORT_PARAMS",0);
+  Register("UCTD_MSMNT_REPORT", 0);
   Register("LOITER_REPORT", 0);
+  Register("NODE_REPORT", 0);
+  Register("NODE_REPORT_LOCAL", 0);
   Register("NAV_X", 0);
   Register("NAV_Y", 0);
 }
@@ -313,11 +455,17 @@ bool SpiralPath::buildReport()
   m_msgs << "File: SpiralPath                            " << endl;
   m_msgs << "============================================" << endl;
   m_msgs << "Message Info"                                 << endl;
-  m_msgs << "  Num Reports: " << m_num_estimate_rcd        << endl;
+  m_msgs << "  Captain:     " << m_captain                 << endl;
+  m_msgs << "  Own Ship:    " << m_os_name                 << endl;
+  m_msgs << "  Collab Ship: " << m_collab_name             << endl;
+  m_msgs << "  # Estimates: " << m_num_estimate_rcd        << endl;
+  m_msgs << "  # Msgs Sent: " << m_num_msgs_sent           << endl;
+  m_msgs << "  # Msgs Recd: " << m_num_msgs_received       << endl;
   m_msgs << "--------------------------------------------" << endl;
   m_msgs << "Loiter Info"                                  << endl;
   m_msgs << "  Num Cycles:  " << m_num_cycles              << endl;
-  m_msgs << "  Position:     <" << m_osx << "," << m_osy << ">" << endl;
+  m_msgs << "  Position:    "
+         << "<" << m_osx << "," << m_osy << ">"            << endl;
   m_msgs << "--------------------------------------------" << endl;
   m_msgs << "Parameter Estimation Info"                    << endl;
   m_msgs << "  vname:       " << m_est_vname               << endl; 

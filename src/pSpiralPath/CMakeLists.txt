@@ -14,6 +14,8 @@ ADD_EXECUTABLE(pSpiralPath ${SRC})
 TARGET_LINK_LIBRARIES(pSpiralPath
    ${MOOS_LIBRARIES}
    apputil
+   contacts
+   ufield
    geometry
    mbutil
    m

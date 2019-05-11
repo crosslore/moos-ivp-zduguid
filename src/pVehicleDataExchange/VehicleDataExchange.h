@@ -14,13 +14,14 @@ class VehicleDataExchange : public AppCastingMOOSApp
 {
  public:
    VehicleDataExchange();
-   ~VehicleDataExchange();
+   ~VehicleDataExchange() {};
 
  protected: // Standard MOOSApp functions to overload  
    bool OnNewMail(MOOSMSG_LIST &NewMail);
    bool Iterate();
    bool OnConnectToServer();
    bool OnStartUp();
+   void handleNewReport(std::string);
 
  protected: // Standard AppCastingMOOSApp function to overload 
    bool buildReport();
