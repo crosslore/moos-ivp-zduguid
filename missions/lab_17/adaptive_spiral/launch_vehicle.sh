@@ -9,6 +9,7 @@ COOL_FAC=50
 COOL_STEPS=1000
 CONCURRENT="true"
 ADAPTIVE="true"
+CAPTAIN="arya"
 
 for ARGI; do
     if [ "${ARGI}" = "--help" -o "${ARGI}" = "-h" ] ; then

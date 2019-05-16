@@ -6,6 +6,7 @@
 #        Chris Gagner, and tips borrowed from Dave Billin
 #===========================================================================
 
+set(CMAKE_CXX_STANDARD 11)
 CMAKE_MINIMUM_REQUIRED(VERSION 2.8)
 PROJECT( IVP_EXTEND )
 

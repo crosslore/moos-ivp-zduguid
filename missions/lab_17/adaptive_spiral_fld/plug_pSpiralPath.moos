@@ -6,5 +6,5 @@ ProcessConfig = pSpiralPath
    AppTick   = 4
    CommsTick = 4
    delta     = 2
-   captain   = arya
+   captain   = $(CAPTAIN)
 }

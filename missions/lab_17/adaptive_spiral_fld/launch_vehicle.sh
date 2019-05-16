@@ -24,6 +24,7 @@ COOL_FAC=50
 COOL_STEPS=1000
 CONCURRENT="true"
 ADAPTIVE="true"
+CAPTAIN="nocaptain"
 
 VNAMES=(abe ben cal deb evan felix gus hal ida jing kirk luke)
 
@@ -47,6 +48,8 @@ for ARGI; do
         SHORE_IPADDR="${ARGI#--shoreip=*}"
     elif [ "${ARGI:0:10}" = "--shoreps=" ] ; then
         SHORE_PSHARE="${ARGI#--shoreps=*}"
+    elif [ "${ARGI:0:10}" = "--captain=" ] ; then
+        CAPTAIN="${ARGI#--captain=*}"
     elif [ "${ARGI}" = "-v1"  -o "${ARGI}" = "-a" ]; then INDEX=1
     elif [ "${ARGI}" = "-v2"  -o "${ARGI}" = "-b" ]; then INDEX=2
     elif [ "${ARGI}" = "-v3"  -o "${ARGI}" = "-c" ]; then INDEX=3
@@ -65,6 +68,7 @@ for ARGI; do
     fi
 done
 
+
 #---------------------------------------------------------
 #  Part 3: Produce the help message if it was requested
 #---------------------------------------------------------
@@ -76,6 +80,7 @@ if [ ${HELP} = "yes" ] ; then
     echo "  --noui             Non-interactive, no uMAC launched "
     echo "  --shoreip=<addr>   Try IP address for shoreside      "
     echo "  --shoreps=<addr>   Try shoreside pshare port (Def 9200) "
+    echo "  --captain=<vname>  Make sure to specify a captain"
     echo "   -v1, or -a        Abe vehicle           "
     echo "   -v2, or -b        Ben vehicle           "
     echo "   -v3, or -c        Cal vehicle           "
@@ -105,6 +110,13 @@ if [ $INDEX -lt 1 -o $INDEX -gt 12 ] ; then
     exit 3
 fi
 
+if [ ${CAPTAIN} = "nocaptain" ]; then
+    echo "No captain has been assigned. Exiting (4)."
+    echo "I am the captain now!"
+    exit 4
+fi
+
+
 #---------------------------------------------------------
 #  Part 5: Build out key shell vars based on vehicle index
 #---------------------------------------------------------
@@ -131,7 +143,8 @@ nsplug meta_vehicle.moos targ_${VNAME}.moos -f -i              \
        RETURN_POS=$RETURN_POS      HOSTIP_FORCE="localhost"    \
        M200_IP=$M200_IP            SIM=$SIM                    \
        COOL_FAC=$COOL_FAC          COOL_STEPS=$COOL_STEPS      \
-       ADAPTIVE=$ADAPTIVE          CONCURRENT=$CONCURRENT       
+       ADAPTIVE=$ADAPTIVE          CONCURRENT=$CONCURRENT      \
+       CAPTAIN=$CAPTAIN
 
 nsplug meta_vehicle.bhv targ_${VNAME}.bhv -f -i \
        RETURN_POS=${RETURN_POS}                 \

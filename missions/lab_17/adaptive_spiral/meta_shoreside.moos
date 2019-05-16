@@ -27,7 +27,7 @@ Processconfig = ANTLER
   Run = pGradeFrontEstimate @ NewConsole=false
 }
 
-#include plug_uFldCTDSensor_1.moos
+#include plug_uFldCTDSensor_3.moos
 #include plug_pHostInfo.moos
 #include plug_pLogger.moos
 //--------------------------------------------------
