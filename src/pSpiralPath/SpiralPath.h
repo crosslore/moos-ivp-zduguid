@@ -28,6 +28,7 @@ class SpiralPath : public AppCastingMOOSApp
     bool handleSpiralRequest(std::string);
     bool handleParameterEstimate(std::string);
     bool handleLoiterReport(std::string);
+    bool handleSpiralMode(std::string);
     bool handleNavX(std::string);
     bool handleNavY(std::string);
     bool handleNewSensorReport(std::string);
@@ -65,6 +66,7 @@ class SpiralPath : public AppCastingMOOSApp
     uint   m_num_msgs_sent;
     uint   m_num_msgs_received;
     bool   m_req_new_estimate;
+    bool   m_spr_active;
     double m_est_offset;
     double m_est_angle;
     double m_est_amplitude;

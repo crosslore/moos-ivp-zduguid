@@ -33,7 +33,7 @@ SpiralPath::SpiralPath()
   m_loiter_y          = 0;
   m_loiter_radius     = 0;
   m_loiter_delta      = 0;
-  m_loiter_offset     = 120;
+  m_loiter_offset     = 50;
 
   // variables parsed from the Front Estimator
   m_num_estimate_rcd  = 0;
@@ -41,6 +41,7 @@ SpiralPath::SpiralPath()
   m_num_msgs_sent     = 0;
   m_num_msgs_received = 0;
   m_req_new_estimate  = false;
+  m_spr_active        = false;
   m_est_offset        = 0;
   m_est_angle         = 0;
   m_est_amplitude     = 0;
@@ -81,6 +82,8 @@ bool SpiralPath::OnNewMail(MOOSMSG_LIST &NewMail)
       handled = handleNavX(sval);
     else if(key == "NAV_Y")
       handled = handleNavY(sval);
+    else if(key == "MOVE_CENTER")
+      handled = handleSpiralMode(sval);
     else if(key != "APPCAST_REQ") // handled by AppCastingMOOSApp
       reportRunWarning("Unhandled Mail: " + key);
    }
@@ -208,7 +211,8 @@ bool SpiralPath::handleParameterEstimate(string request_string)
   amplitude_vector.set_vertex_color("yellowgreen");
 
   // adjust the loiter position depending upon the current parameters
-  m_loiter_offset += m_loiter_delta;
+  if (m_spr_active)
+    m_loiter_offset += m_loiter_delta;
   m_loiter_radius  = max(min(m_est_amplitude, 50.0), 20.0);
   m_loiter_x = front_vector.xpos() + m_loiter_offset*cos(m_est_angle*PI/180.0);
   m_loiter_y = front_vector.ypos() + m_loiter_offset*sin(m_est_angle*PI/180.0);
@@ -240,7 +244,7 @@ bool SpiralPath::handleParameterEstimate(string request_string)
 bool SpiralPath::handleLoiterReport(string request_string)
 {
   string index   = tokStringParse(request_string, "index", ',', '=');
-  if (index == "0"){
+  if (index == "0") {
     m_num_cycles++;
     // update the Loiter behavior after every loiter cycle 
     //  -> MOOS Variable: "SPIRAL_UPDATES" (publishes to BHV_Loiter)
@@ -367,6 +371,16 @@ bool SpiralPath::handleNavY(string sval)
 
 
 //------------------------------------------------------------
+// Procedure: handleSpiralMode()
+
+bool SpiralPath::handleSpiralMode(string sval)
+{
+  m_spr_active = true;
+  return(true);
+}
+
+
+//------------------------------------------------------------
 // Procedure: handleNewSensorReport()
 
 bool SpiralPath::handleNewSensorReport(string sval)
@@ -441,6 +455,7 @@ void SpiralPath::registerVariables()
   Register("LOITER_REPORT", 0);
   Register("NODE_REPORT", 0);
   Register("NODE_REPORT_LOCAL", 0);
+  Register("MOVE_CENTER", 0);
   Register("NAV_X", 0);
   Register("NAV_Y", 0);
 }
@@ -463,6 +478,7 @@ bool SpiralPath::buildReport()
   m_msgs << "  # Msgs Recd: " << m_num_msgs_received       << endl;
   m_msgs << "--------------------------------------------" << endl;
   m_msgs << "Loiter Info"                                  << endl;
+  m_msgs << "  Spiral Mode: " << m_spr_active               << endl;
   m_msgs << "  Num Cycles:  " << m_num_cycles              << endl;
   m_msgs << "  Position:    "
          << "<" << m_osx << "," << m_osy << ">"            << endl;
